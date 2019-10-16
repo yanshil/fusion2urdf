@@ -6,6 +6,8 @@ import os
 from .utils import utils
 from .core import Link, Joint, Write
 
+import json
+
 """
 # length unit is 'cm' and inertial unit is 'kg/cm^2'
 # If there is no 'body' in the root component, maybe the corrdinates are wrong.
@@ -51,25 +53,41 @@ def run(context):
         
         # --------------------
         # set dictionaries
-        
-        # Generate joints_dict. All joints are related to root. 
-        joints_dict, msg = Joint.make_joints_dict(root, msg)
-        if msg != success_msg:
-            ui.messageBox(msg, title)
-            return 0   
-        
-        # Generate inertial_dict
+        joints_dict = {}
+        inertial_dict = {}
+        links_xyz_dict = {}
+
+        ## Generate joints_dict for ALL joints
+        for comp in design.allComponents:
+            if comp.joints:
+                comp_joints_dict, msg = Joint.make_joints_dict(comp, msg)
+                joints_dict.update(comp_joints_dict)
+                if msg != success_msg:
+                    ui.messageBox('Check Component: ' + comp.name + '\t Joint: ' + joint.name)
+                    ui.messageBox(msg, title)
+                    return 0
+
+        ## Generate inertial_dict
         inertial_dict, msg = Link.make_inertial_dict(root, msg)
         if msg != success_msg:
             ui.messageBox(msg, title)
-            return 0
+            return 0         
         elif not 'base_link' in inertial_dict:
             msg = 'There is no base_link. Please set base_link and run again.'
             ui.messageBox(msg, title)
             return 0
-        
-        links_xyz_dict = {}
-        
+
+        # --- TEST ---
+        jd1 = json.dumps(joints_dict)
+        f = open(os.path.join(save_dir,"joints_dict.json"),"w")
+        f.write(jd1)
+        f.close()
+
+        jd2 = json.dumps(inertial_dict)
+        f = open(os.path.join(save_dir,"inertial_dict.json"),"w")
+        f.write(jd2)
+        f.close()
+
         # --------------------
         # Generate URDF
         Write.write_urdf(joints_dict, links_xyz_dict, inertial_dict, package_name, save_dir, robot_name)

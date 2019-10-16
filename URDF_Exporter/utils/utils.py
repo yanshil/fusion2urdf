@@ -10,6 +10,7 @@ import os.path, re
 from xml.etree import ElementTree
 from xml.dom import minidom
 
+## TODO: Strange behavior when name of components contain ( and ) --> get tons of ___
 
 def copy_occs(root):    
     """    

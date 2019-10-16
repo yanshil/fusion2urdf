@@ -132,6 +132,7 @@ def make_joints_dict(comp, msg):
         joint_dict = {}
         joint_type = joint_type_list[joint.jointMotion.jointType]
         joint_dict['type'] = joint_type
+        joint_dict['name'] = joint.name
         
         # swhich by the type of the joint
         joint_dict['axis'] = [0, 0, 0]
@@ -175,11 +176,12 @@ def make_joints_dict(comp, msg):
         
         if joint.occurrenceTwo.component.name == 'base_link':
             joint_dict['parent'] = 'base_link'
+            joint_dict['parent_key'] = 'base_link'
         else:
             joint_dict['parent'] = re.sub('[ :()]', '_', joint.occurrenceTwo.name)
-            joint_dict['parent_key'] = joint.occurrenceTwo.fullPathName
+            joint_dict['parent_key'] = re.sub('[ :()]', '_', joint.occurrenceTwo.fullPathName)
         joint_dict['child'] = re.sub('[ :()]', '_', joint.occurrenceOne.name)
-        joint_dict['child_key'] = joint.occurrenceOne.fullPathName
+        joint_dict['child_key'] = re.sub('[ :()]', '_', joint.occurrenceOne.fullPathName)
         
         try:
             joint_dict['xyz'] = [round(i / 100.0, 6) for i in \
@@ -195,6 +197,6 @@ def make_joints_dict(comp, msg):
                 msg = joint.name + " doesn't have joint origin. Please set it and run again."
                 break
         
-        key = joints_dict['child_key'] + '_' + joint.name
+        key = joint_dict['child_key'] + '---' + joint.name
         joints_dict[key] = joint_dict
     return joints_dict, msg

@@ -129,6 +129,6 @@ def make_inertial_dict(root, msg):
             inertial_dict['base_link'] = occs_dict
         else:
             occs_dict['name'] = re.sub('[ :()]', '_', occs.name)
-            inertial_dict[occs.fullPathName] = occs_dict
+            inertial_dict[re.sub('[ :()]', '_', occs.fullPathName)] = occs_dict
 
     return inertial_dict, msg

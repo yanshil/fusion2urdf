@@ -50,7 +50,7 @@ def write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict)
             key = joints_dict[joint]['child_key']
             name = joints_dict[joint]['child']
             center_of_mass = \
-                [ i-j for i, j in zip(inertial_dict[name]['center_of_mass'], joints_dict[joint]['xyz'])]
+                [ i-j for i, j in zip(inertial_dict[key]['center_of_mass'], joints_dict[joint]['xyz'])]
             link = Link.Link(key = key, name=name, xyz=joints_dict[joint]['xyz'],\
                 center_of_mass=center_of_mass,\
                 repo=repo, mass=inertial_dict[key]['mass'],\
@@ -76,17 +76,20 @@ def write_joint_tran_urdf(joints_dict, repo, links_xyz_dict, file_name):
     file_name: str
         urdf full path
     """
-    
+    ## TODO: Repeated joint name?
+
     with open(file_name, mode='a') as f:
         for j in joints_dict:
             parent = joints_dict[j]['parent']
+            parent_key = joints_dict[j]['parent_key']
             child = joints_dict[j]['child']
+            child_key = joints_dict[j]['child_key']
             joint_type = joints_dict[j]['type']
             upper_limit = joints_dict[j]['upper_limit']
             lower_limit = joints_dict[j]['lower_limit']
             try:
                 xyz = [round(p-c, 6) for p, c in \
-                    zip(links_xyz_dict[parent], links_xyz_dict[child])]  # xyz = parent - child
+                    zip(links_xyz_dict[parent_key], links_xyz_dict[child_key])]  # xyz = parent - child
             except KeyError as ke:
                 app = adsk.core.Application.get()
                 ui = app.userInterface
@@ -96,8 +99,8 @@ to swap component1<=>component2"
                 % (parent, child, parent, child), "Error!")
                 quit()
                 
-            joint = Joint.Joint(name=j, joint_type = joint_type, xyz=xyz, \
-            axis=joints_dict[j]['axis'], parent=parent, child=child, \
+            joint = Joint.Joint(key=j, name=joints_dict[j]['name'], joint_type = joint_type, xyz=xyz, \
+            axis=joints_dict[j]['axis'], parent=parent_key, child=child_key, \
             upper_limit=upper_limit, lower_limit=lower_limit)
             joint.make_joint_xml()
             joint.make_transmission_xml()
