@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun May 12 20:46:26 2019
+Modified on Wed Oct 16 13:06:02 2019
 
 @author: syuntoku
+@yanshil
 """
 
 import adsk, os
@@ -36,24 +37,25 @@ def write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict)
     with open(file_name, mode='a') as f:
         # for base_link
         center_of_mass = inertial_dict['base_link']['center_of_mass']
-        link = Link.Link(name='base_link', xyz=[0,0,0], 
+        link = Link.Link(key = 'base_link', name='base_link', xyz=[0,0,0], 
             center_of_mass=center_of_mass, repo=repo,
             mass=inertial_dict['base_link']['mass'],
             inertia_tensor=inertial_dict['base_link']['inertia'])
-        links_xyz_dict[link.name] = link.xyz
+        links_xyz_dict[link.key] = link.xyz
         link.make_link_xml()
         f.write(link.link_xml)
 
         # others
         for joint in joints_dict:
+            key = joints_dict[joint]['child_key']
             name = joints_dict[joint]['child']
             center_of_mass = \
                 [ i-j for i, j in zip(inertial_dict[name]['center_of_mass'], joints_dict[joint]['xyz'])]
-            link = Link.Link(name=name, xyz=joints_dict[joint]['xyz'],\
+            link = Link.Link(key = key, name=name, xyz=joints_dict[joint]['xyz'],\
                 center_of_mass=center_of_mass,\
-                repo=repo, mass=inertial_dict[name]['mass'],\
-                inertia_tensor=inertial_dict[name]['inertia'])
-            links_xyz_dict[link.name] = link.xyz            
+                repo=repo, mass=inertial_dict[key]['mass'],\
+                inertia_tensor=inertial_dict[key]['inertia'])
+            links_xyz_dict[link.key] = link.xyz            
             link.make_link_xml()
             f.write(link.link_xml)
 

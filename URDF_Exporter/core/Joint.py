@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun May 12 20:17:17 2019
+Modified on Wed Oct 16 12:58:45 2019
 
 @author: syuntoku
+@yanshil
 """
 
 import adsk, re
@@ -10,10 +11,12 @@ from xml.etree.ElementTree import Element, SubElement
 from ..utils import utils
 
 class Joint:
-    def __init__(self, name, xyz, axis, parent, child, joint_type, upper_limit, lower_limit):
+    def __init__(self, key, name, xyz, axis, parent, child, joint_type, upper_limit, lower_limit):
         """
         Attributes
         ----------
+        key: str
+            full path of child + name of the joint
         name: str
             name of the joint
         type: str
@@ -31,6 +34,7 @@ class Joint:
         tran_xml: str
             generated xml describing about the transmission
         """
+        self.key = key
         self.name = name
         self.type = joint_type
         self.xyz = xyz
@@ -47,7 +51,7 @@ class Joint:
         Generate the joint_xml and hold it by self.joint_xml
         """
         joint = Element('joint')
-        joint.attrib = {'name':self.name, 'type':self.type}
+        joint.attrib = {'name':self.key, 'type':self.type}
         
         origin = SubElement(joint, 'origin')
         origin.attrib = {'xyz':' '.join([str(_) for _ in self.xyz]), 'rpy':'0 0 0'}
@@ -78,18 +82,18 @@ class Joint:
         """        
         
         tran = Element('transmission')
-        tran.attrib = {'name':self.name + '_tran'}
+        tran.attrib = {'name':self.key + '_tran'}
         
         joint_type = SubElement(tran, 'type')
         joint_type.text = 'transmission_interface/SimpleTransmission'
         
         joint = SubElement(tran, 'joint')
-        joint.attrib = {'name':self.name}
+        joint.attrib = {'name':self.key}
         hardwareInterface_joint = SubElement(joint, 'hardwareInterface')
         hardwareInterface_joint.text = 'PositionJointInterface'
         
         actuator = SubElement(tran, 'actuator')
-        actuator.attrib = {'name':self.name + '_actr'}
+        actuator.attrib = {'name':self.key + '_actr'}
         hardwareInterface_actr = SubElement(actuator, 'hardwareInterface')
         hardwareInterface_actr.text = 'PositionJointInterface'
         mechanicalReduction = SubElement(actuator, 'mechanicalReduction')
@@ -98,15 +102,15 @@ class Joint:
         self.tran_xml = "\n".join(utils.prettify(tran).split("\n")[1:])
 
 
-def make_joints_dict(root, msg):
+def make_joints_dict(comp, msg):
     """
     joints_dict holds parent, axis and xyz informatino of the joints
     
     
     Parameters
     ----------
-    root: adsk.fusion.Design.cast(product)
-        Root component
+    comp: components of the design
+        component
     msg: str
         Tell the status
         
@@ -124,7 +128,7 @@ def make_joints_dict(root, msg):
 
     joints_dict = {}
     
-    for joint in root.joints:
+    for joint in comp.joints:
         joint_dict = {}
         joint_type = joint_type_list[joint.jointMotion.jointType]
         joint_dict['type'] = joint_type
@@ -173,7 +177,9 @@ def make_joints_dict(root, msg):
             joint_dict['parent'] = 'base_link'
         else:
             joint_dict['parent'] = re.sub('[ :()]', '_', joint.occurrenceTwo.name)
+            joint_dict['parent_key'] = joint.occurrenceTwo.fullPathName
         joint_dict['child'] = re.sub('[ :()]', '_', joint.occurrenceOne.name)
+        joint_dict['child_key'] = joint.occurrenceOne.fullPathName
         
         try:
             joint_dict['xyz'] = [round(i / 100.0, 6) for i in \
@@ -189,5 +195,6 @@ def make_joints_dict(root, msg):
                 msg = joint.name + " doesn't have joint origin. Please set it and run again."
                 break
         
-        joints_dict[joint.name] = joint_dict
+        key = joints_dict['child_key'] + '_' + joint.name
+        joints_dict[key] = joint_dict
     return joints_dict, msg

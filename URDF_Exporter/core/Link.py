@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun May 12 20:11:28 2019
+Modified on Wed Oct 16 12:52:21 2019
 
 @author: syuntoku
+@yanshil
 """
 
 import adsk, re
@@ -11,12 +12,14 @@ from ..utils import utils
 
 class Link:
 
-    def __init__(self, name, xyz, center_of_mass, repo, mass, inertia_tensor):
+    def __init__(self, key, name, xyz, center_of_mass, repo, mass, inertia_tensor):
         """
         Parameters
         ----------
+        key: str
+            full path of the link
         name: str
-            name of the link
+            name of the link (Also the name of stl files)
         xyz: [x, y, z]
             coordinate for the visual and collision
         center_of_mass: [x, y, z]
@@ -30,6 +33,7 @@ class Link:
         inertia_tensor: [ixx, iyy, izz, ixy, iyz, ixz]
             tensor of the inertia
         """
+        self.key = key
         self.name = name
         # xyz for visual
         self.xyz = [-_ for _ in xyz]  # reverse the sign of xyz
@@ -46,7 +50,7 @@ class Link:
         """
         
         link = Element('link')
-        link.attrib = {'name':self.name}
+        link.attrib = {'name':self.key}     ## Unique among the design
         
         #inertial
         inertial = SubElement(link, 'inertial')
@@ -100,8 +104,8 @@ def make_inertial_dict(root, msg):
     msg: str
         Tell the status
     """
-    # Get component properties.      
-    allOccs = root.occurrences
+    # Get ALL component properties.      
+    allOccs = root.allOccurrences
     inertial_dict = {}
     
     for occs in allOccs:
@@ -118,9 +122,13 @@ def make_inertial_dict(root, msg):
         occs_dict['mass'] = mass
         occs_dict['inertia'] = utils.origin2center_of_mass(inertia_world, center_of_mass, mass)  
         
+        ## TODO: Use occ.GetComponentName
+        ## Set up Occ name and key
         if occs.component.name == 'base_link':
+            occs_dict['name'] = 'base_link'
             inertial_dict['base_link'] = occs_dict
         else:
-            inertial_dict[re.sub('[ :()]', '_', occs.name)] = occs_dict
+            occs_dict['name'] = re.sub('[ :()]', '_', occs.name)
+            inertial_dict[occs.fullPathName] = occs_dict
 
     return inertial_dict, msg
