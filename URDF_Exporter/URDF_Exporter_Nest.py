@@ -3,7 +3,7 @@
 
 import adsk, adsk.core, adsk.fusion, traceback
 import os
-from .utils import utils
+from .utils import utils_binary
 from .core import Link, Joint, Write
 
 import json
@@ -42,7 +42,7 @@ def run(context):
         # set the names        
         package_name = 'fusion2urdf'
         robot_name = root.name.split()[0]
-        save_dir = utils.file_dialog(ui)
+        save_dir = utils_binary.file_dialog(ui)
         if save_dir == False:
             ui.messageBox('Fusion2URDF was canceled', title)
             return 0
@@ -96,8 +96,8 @@ def run(context):
         Write.write_yaml(robot_name, save_dir, joints_dict)
         
         # Generate STl files        
-        utils.copy_occs(root)
-        utils.export_stl(design, save_dir, components)   
+        ##utils.copy_occs(root)
+        utils_binary.export_stl(design, save_dir)   
         
         ui.messageBox(msg, title)
         

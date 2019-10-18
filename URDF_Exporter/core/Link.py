@@ -70,7 +70,8 @@ class Link:
         origin_v.attrib = {'xyz':' '.join([str(_) for _ in self.xyz]), 'rpy':'0 0 0'}
         geometry_v = SubElement(visual, 'geometry')
         mesh_v = SubElement(geometry_v, 'mesh')
-        mesh_v.attrib = {'filename':'package://' + self.repo + self.name + '_m-binary.stl'}
+        #mesh_v.attrib = {'filename':'package://' + self.repo + self.name + '_m-binary.stl'}
+        mesh_v.attrib = {'filename': self.repo + self.name + '.stl'}
         material = SubElement(visual, 'material')
         material.attrib = {'name':'silver'}
         color = SubElement(material, 'color')
@@ -82,7 +83,8 @@ class Link:
         origin_c.attrib = {'xyz':' '.join([str(_) for _ in self.xyz]), 'rpy':'0 0 0'}
         geometry_c = SubElement(collision, 'geometry')
         mesh_c = SubElement(geometry_c, 'mesh')
-        mesh_c.attrib = {'filename':'package://' + self.repo + self.name + '_m-binary.stl'}
+        #mesh_c.attrib = {'filename':'package://' + self.repo + self.name + '_m-binary.stl'}
+        mesh_c.attrib = {'filename': self.repo + self.name + '.stl'}
 
         # print("\n".join(utils.prettify(link).split("\n")[1:]))
         self.link_xml = "\n".join(utils.prettify(link).split("\n")[1:])

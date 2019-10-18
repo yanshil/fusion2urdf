@@ -52,7 +52,7 @@ def copy_occs(root):
 
 def export_stl(design, save_dir, components):  
     """
-    export stl files into "sace_dir/"
+    export stl files into "save_dir/"
     
     
     Parameters
