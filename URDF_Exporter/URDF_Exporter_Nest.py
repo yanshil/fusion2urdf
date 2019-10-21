@@ -53,19 +53,22 @@ def run(context):
         
         # --------------------
         # set dictionaries
-        joints_dict = {}
+        #joints_dict = {}
         inertial_dict = {}
         links_xyz_dict = {}
 
-        ## Generate joints_dict for ALL joints
-        for comp in design.allComponents:
-            if comp.joints:
-                comp_joints_dict, msg = Joint.make_joints_dict(comp, msg)
-                joints_dict.update(comp_joints_dict)
-                if msg != success_msg:
-                    ui.messageBox('Check Component: ' + comp.name + '\t Joint: ' + joint.name)
-                    ui.messageBox(msg, title)
-                    return 0
+        # ## Generate joints_dict for ALL joints
+        # for comp in design.allComponents:
+        #     if comp.joints:
+        #         comp_joints_dict, msg = Joint.make_joints_dict(comp, msg)
+        #         joints_dict.update(comp_joints_dict)
+        #         if msg != success_msg:
+        #             ui.messageBox('Check Component: ' + comp.name + '\t Joint: ' + joint.name)
+        #             ui.messageBox(msg, title)
+        #             return 0
+        
+        [joints_dict, resultString] = Joint.getJoints(root)
+        ui.messageBox(resultString)
 
         ## Generate inertial_dict
         inertial_dict, msg = Link.make_inertial_dict(root, msg)

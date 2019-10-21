@@ -76,7 +76,6 @@ def write_joint_tran_urdf(joints_dict, repo, links_xyz_dict, file_name):
     file_name: str
         urdf full path
     """
-    ## TODO: Repeated joint name?
 
     with open(file_name, mode='a') as f:
         for j in joints_dict:
