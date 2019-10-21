@@ -1,5 +1,23 @@
 # fusion2urdf
 
+### Nest Component Update Notes (@yanshil 10/21/2019)
+
+1. What makes the nested component support difficult:
+   * Have to create new component for each occurrence because of the mess of origin point for different components
+   * Joints between different occurrence have different coordinates (Solved by using createForAssemblyContext)
+   * Tried to simplify it as directly export binary stl files. But looks like the unit of measurement is in a mess. s.t. have to use the origin version to export ascii format and transform from mm and m and then transform back
+   * References for nested occurrence (How to name it uniquely and correctly) is a little bit mess
+2. TODO:
+  - [ ] Tidy comments
+  - [ ]  Check encoding issue (Currently has to set language to English)
+  - [ ]  Remove tmp json dump files
+  - [ ]  Tidy util.py
+  - [ ]  Unique name of Link and Joints (Can remove the duplicated 'key' and 'name')
+  - [ ]  Do another try on directly export stl.
+  - [ ]  (I'm not sure what the origin version used for the unit of measurement. Looks correct after running the ruby files but I'm not familiar about ruby and not sure why it works like that..)
+
+
+
 ### Updated!!!
 
 * 2018/09/19: Fixed the bugs about the center of the mass and the inertia. 
