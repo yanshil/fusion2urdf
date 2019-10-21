@@ -97,6 +97,7 @@ def run(context):
         
         # Generate STl files        
         ##utils.copy_occs(root)
+        utils_binary.create_stl_export_component(root)
         utils_binary.export_stl(design, save_dir)   
         
         ui.messageBox(msg, title)

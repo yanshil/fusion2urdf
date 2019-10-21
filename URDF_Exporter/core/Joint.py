@@ -8,7 +8,7 @@ Modified on Wed Oct 16 12:58:45 2019
 
 import adsk, re
 from xml.etree.ElementTree import Element, SubElement
-from ..utils import utils
+from ..utils import utils_binary
 
 class Joint:
     def __init__(self, key, name, xyz, axis, parent, child, joint_type, upper_limit, lower_limit):
@@ -67,7 +67,7 @@ class Joint:
             limit.attrib = {'upper': str(self.upper_limit), 'lower': str(self.lower_limit),
                             'effort': '100', 'velocity': '100'}
             
-        self.joint_xml = "\n".join(utils.prettify(joint).split("\n")[1:])
+        self.joint_xml = "\n".join(utils_binary.prettify(joint).split("\n")[1:])
 
     def make_transmission_xml(self):
         """
@@ -99,7 +99,7 @@ class Joint:
         mechanicalReduction = SubElement(actuator, 'mechanicalReduction')
         mechanicalReduction.text = '1'
         
-        self.tran_xml = "\n".join(utils.prettify(tran).split("\n")[1:])
+        self.tran_xml = "\n".join(utils_binary.prettify(tran).split("\n")[1:])
 
 
 def make_joints_dict(comp, msg):
@@ -178,9 +178,9 @@ def make_joints_dict(comp, msg):
             joint_dict['parent'] = 'base_link'
             joint_dict['parent_key'] = 'base_link'
         else:
-            joint_dict['parent'] = re.sub('[ :()]', '_', joint.occurrenceTwo.name)
+            joint_dict['parent'] = joint.occurrenceTwo.fullPathName
             joint_dict['parent_key'] = re.sub('[ :()]', '_', joint.occurrenceTwo.fullPathName)
-        joint_dict['child'] = re.sub('[ :()]', '_', joint.occurrenceOne.name)
+        joint_dict['child'] = utils_binary.get_valid_filename(joint.occurrenceOne.fullPathName)
         joint_dict['child_key'] = re.sub('[ :()]', '_', joint.occurrenceOne.fullPathName)
         
         try:

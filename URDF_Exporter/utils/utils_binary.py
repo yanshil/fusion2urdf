@@ -12,42 +12,81 @@ import os.path, re
 from xml.etree import ElementTree
 from xml.dom import minidom
 
-# def copy_occs(root):    
-#     """    
-#     duplicate all the components
-#     """    
-#     def copy_body(allOccs, occs):
-#         """    
-#         copy the old occs to new component
-#         """
-        
-#         bodies = occs.bRepBodies
-#         transform = adsk.core.Matrix3D.create()
-        
-#         # Create new components from occs
-#         # This support even when a component has some occses. 
+## https://github.com/django/django/blob/master/django/utils/text.py
+def get_valid_filename(s):
+    """
+    Return the given string converted to a string that can be used for a clean
+    filename. Remove leading and trailing spaces; convert other spaces to
+    underscores; and remove anything that is not an alphanumeric, dash,
+    underscore, or dot.
+    >>> get_valid_filename("john's portrait in 2004.jpg")
+    'johns_portrait_in_2004.jpg'
+    """
+    s = str(s).strip().replace(' ', '_')
+    return re.sub(r'(?u)[^-\w.]', '', s)
 
-#         new_occs = allOccs.addNewComponent(transform)  # this create new occs
-#         if occs.component.name == 'base_link':
-#             occs.component.name = 'old_component'
-#             new_occs.component.name = 'base_link'
-#         else:
-#             new_occs.component.name = re.sub('[ :()]', '_', occs.name)
-#         new_occs = allOccs[-1]
-#         for i in range(bodies.count):
-#             body = bodies.item(i)
-#             body.copyToComponent(new_occs)
+
+def create_stl_export_component(root):    
+    """
+    duplicate all occurences as a new component
+        1. Extract all occurences (regardless of the level)
+        2. Create a new component in root to store the occurence
+            * name = re.sub(occ.name)
+            * origin component name = old_component
+        3. Copy the rigid body from origin to new component
+    """    
+    def copy2root(Occurs, occ):
+        """    
+        copy the old occ to new component
+        """
+        bodies = occ.bRepBodies
+        ## Initialized as an identity matrix and is created statically using the Matrix3D.create method.
+        transform = adsk.core.Matrix3D.create()
+        
+        # Create new components from occ
+        # This support even when a component has some occes. 
+        new_occs = Occurs.addNewComponent(transform)  # this create new occs
+        if occ.component.name == 'base_link':
+            occ.component.name = 'old_component'
+            new_occs.component.name = 'base_link'
+        else:
+            new_occs.component.name = occs.fullPathName
+        new_occs = Occurs[-1]
+        for i in range(bodies.count):
+            body = bodies.item(i)
+            body.copyToComponent(new_occs)
     
-#     allOccs = root.occurrences
-#     oldOccs = []
-#     coppy_list = [occs for occs in allOccs]
-#     for occs in coppy_list:
-#         if occs.bRepBodies.count > 0:
-#             copy_body(allOccs, occs)
-#             oldOccs.append(occs)
+    ## All occurences with nested structure
+    allOccs = root.allOccurrences
+    oldOccs = []
+    coppy_list = [occs for occs in allOccs]
+    for occs in coppy_list:
+        if occs.bRepBodies.count > 0:
+            copy2root(root.occurrences, occs)
+            oldOccs.append(occs)
 
-#     for occs in oldOccs:
-#         occs.component.name = 'old_component'
+    for occs in oldOccs:
+        occs.component.name = 'old_component'
+
+
+def deleteOldComponent(design): 
+    root = design.rootComponent
+    components = design.allComponents
+
+    componentsToDelete = []  
+    for component in components:
+        #if len(component.bRepBodies) == 0:
+        if 'old_component' in component.name:
+            componentsToDelete.append(component)
+
+    for component in componentsToDelete:
+        # Get the name first because deleting the final Occurrence will delete the Component.
+        name = component.name
+
+        # Build a list of unique immediate occurrences of the component.
+        occurrences = root.allOccurrencesByComponent(component)
+        for occurrence in occurrences:
+            occurrence.deleteMe()
 
 
 def export_stl(design, save_dir):  
@@ -62,7 +101,7 @@ def export_stl(design, save_dir):
         directory path to save
     """
     # get root component in this design
-    rootComp = design.rootComponent
+    root = design.rootComponent
 
     # create a single exportManager instance
     exportMgr = design.exportManager
@@ -71,28 +110,26 @@ def export_stl(design, save_dir):
     except: pass
     scriptDir = save_dir + '/mm_stl'
 
-    allOccus = rootComp.allOccurrences
+    allOccus = root.occurrences
 
     # # export the occurrence one by one in the component to a specified file
     # for component in components:
     #     allOccus = component.allOccurrences
     for occ in allOccus:
-        ## Rename with UNDERLINE
-        #occ.component.name = re.sub('[ :()]', '_', occ.name)
-        # if 'old_component' not in occ.component.name:
-        try:
-            print(occ.component.name)
-            fileName = scriptDir + "/" + occ.component.name
-            # create stl exportOptions
-            stlExportOptions = exportMgr.createSTLExportOptions(occ, fileName)
-            stlExportOptions.sendToPrintUtility = False
-            stlExportOptions.isBinaryFormat = True
-            # options are .MeshRefinementLow .MeshRefinementMedium .MeshRefinementHigh
-            stlExportOptions.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementLow
-            exportMgr.execute(stlExportOptions)
-        except:
-            print('Component ' + occ.component.name + 'has something wrong.')
-            
+        if 'old_component' not in occ.component.name:
+            try:
+                ## Filename cannot contain "\/:*?<>"
+                fileName = scriptDir + "/" + get_valid_filename(occ.component.name)
+                # create stl exportOptions
+                stlExportOptions = exportMgr.createSTLExportOptions(occ, fileName)
+                stlExportOptions.sendToPrintUtility = False
+                stlExportOptions.isBinaryFormat = False
+                # options are .MeshRefinementLow .MeshRefinementMedium .MeshRefinementHigh
+                stlExportOptions.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementLow
+                exportMgr.execute(stlExportOptions)
+            except:
+                print('Component ' + occ.fullPathName + 'has something wrong.')
+                
 
 def file_dialog(ui):     
     """
