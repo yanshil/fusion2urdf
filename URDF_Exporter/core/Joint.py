@@ -102,6 +102,7 @@ class Joint:
         self.tran_xml = "\n".join(utils_binary.prettify(tran).split("\n")[1:])
 
 
+
 def traverseAssembly(occurrences, currentLevel, inputString, joints_dict={}, msg='Successfully create URDF file'):
     for i in range(0, occurrences.count):
         occ = occurrences.item(i)
