@@ -142,6 +142,30 @@ def write_urdf(joints_dict, links_xyz_dict, inertial_dict, package_name, save_di
     write_joint_tran_urdf(joints_dict, repo, links_xyz_dict, file_name)
     write_gazebo_plugin_and_endtag(file_name)
 
+def write_hello_pybullet(robot_name, save_dir):
+    robot_urdf = robot_name + '.urdf' ## basename of robot.urdf
+    file_name = save_dir + '/' + 'hello_bullet.py'
+    hello_pybullet = """import pybullet as p
+import time
+import pybullet_data
+physicsClient = p.connect(p.GUI)#or p.DIRECT for non-graphical version
+p.setAdditionalSearchPath(pybullet_data.getDataPath()) #optionally
+p.setGravity(0,0,-10)
+planeId = p.loadURDF("plane.urdf")
+cubeStartPos = [0,0,0]
+cubeStartOrientation = p.getQuaternionFromEuler([0,0,0])
+boxId = p.loadURDF("TEMPLATE.urdf",cubeStartPos, cubeStartOrientation)
+for i in range (10000):
+    p.stepSimulation()
+    time.sleep(1./240.)
+cubePos, cubeOrn = p.getBasePositionAndOrientation(boxId)
+print(cubePos,cubeOrn)
+p.disconnect()
+"""
+    hello_pybullet = hello_pybullet.replace('TEMPLATE.urdf', robot_urdf).replace('\t', '    ')
+    with open(file_name, mode='w') as f:
+        f.write(hello_pybullet)
+        f.write('\n')
 
 def write_gazebo_launch(robot_name, save_dir):
     """
