@@ -128,7 +128,7 @@ def write_gazebo_plugin_and_endtag(file_name):
 
 def write_urdf(joints_dict, links_xyz_dict, inertial_dict, package_name, save_dir, robot_name):
     file_name = save_dir + '/' + robot_name + '.urdf'  # the name of urdf file
-    repo = package_name + '/' + robot_name + '/meshes/'  # the repository of binary stl files
+    repo = 'meshes/'  # Pybullet only need relative paths
     with open(file_name, mode='w') as f:
         f.write('<?xml version="1.0" ?>\n')
         f.write('<robot name="{}">\n'.format(robot_name))
