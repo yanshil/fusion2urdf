@@ -74,9 +74,6 @@ def run(context):
         # Generate URDF
         Write.write_urdf(joints_dict, links_xyz_dict, inertial_dict, package_name, save_dir, robot_name)
         Write.write_hello_pybullet(robot_name, save_dir)
-        Write.write_gazebo_launch(robot_name, save_dir)
-        Write.write_control_launch(robot_name, save_dir, joints_dict)
-        Write.write_yaml(robot_name, save_dir, joints_dict)
         
         # Generate STl files        
         utils.copy_occs(root)
