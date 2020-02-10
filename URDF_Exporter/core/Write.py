@@ -121,6 +121,18 @@ def write_urdf(joints_dict, links_xyz_dict, inertial_dict, package_name, save_di
 
     write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict)
     write_joint_tran_urdf(joints_dict, repo, links_xyz_dict, file_name)
+    write_endtag(file_name)
+
+def write_endtag(file_name):
+    """
+    Write the </robot> tag at the end of the urdf
+    Parameters
+    ----------
+    file_name: str
+        urdf full path
+    """
+    with open(file_name, mode='a') as f:
+        f.write('</robot>\n')
 
 def write_hello_pybullet(robot_name, save_dir):
     robot_urdf = robot_name + '.urdf' ## basename of robot.urdf
