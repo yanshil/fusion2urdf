@@ -15,7 +15,7 @@ This exports:
 ### Fusion Add-in
 Add this script into Fusion 360 via Tools -> Add-Ins
 
-
+<img src="https://github.com/yanshil/fusion2urdf/blob/images/addin.png" alt="addin" title="Fusion Add-in" width="300" height="300">
 
 #### Before using this script
 
@@ -50,5 +50,7 @@ Add this script into Fusion 360 via Tools -> Add-Ins
 
 2. Run the script and select storing location
    * Note: **Don't save** your file after running the scripts! Some temporary "old component" will be created
+   * <img src="https://github.com/yanshil/fusion2urdf/blob/images/2.png" alt="2" title="outputs" width="300" height="300">
+   * <img src="https://github.com/yanshil/fusion2urdf/blob/images/files.png" alt="files" title="files" width="300" height="300">
 3. Enjoy from `python hello_bullet.py` !
 
