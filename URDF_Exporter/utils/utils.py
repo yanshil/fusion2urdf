@@ -123,7 +123,7 @@ def origin2center_of_mass(inertia, center_of_mass, mass):
     z = center_of_mass[2]
     translation_matrix = [y**2+z**2, x**2+z**2, x**2+y**2,
                          -x*y, -y*z, -x*z]
-    return [ round(i - mass*t, 6) for i, t in zip(inertia, translation_matrix)]
+    return [ i - mass*t for i, t in zip(inertia, translation_matrix)]
 
 
 def prettify(elem):
