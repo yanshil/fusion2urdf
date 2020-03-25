@@ -98,8 +98,8 @@ def make_inertial_dict(root, msg):
     msg: str
         Tell the status
     """
-    # Get component properties.      
-    allOccs = root.occurrences
+    # Get ALL component properties.      
+    allOccs = root.allOccurrences
     inertial_dict = {}
     
     for occs in allOccs:
@@ -107,7 +107,7 @@ def make_inertial_dict(root, msg):
         occs_dict = {}
         prop = occs.getPhysicalProperties(adsk.fusion.CalculationAccuracy.VeryHighCalculationAccuracy)
         
-        occs_dict['name'] = re.sub('[ :()]', '_', occs.name)
+        
 
         mass = prop.mass  # kg
         occs_dict['mass'] = mass
@@ -120,8 +120,15 @@ def make_inertial_dict(root, msg):
         occs_dict['inertia'] = utils.origin2center_of_mass(moment_inertia_world, center_of_mass, mass)
         
         if occs.component.name == 'base_link':
+            occs_dict['name'] = 'base_link'
             inertial_dict['base_link'] = occs_dict
+            # print("Processing Base Link")
         else:
-            inertial_dict[re.sub('[ :()]', '_', occs.name)] = occs_dict
+            # occs_dict['name'] = re.sub('[ :()]', '_', occs.name)
+            key = utils.get_valid_filename(occs.fullPathName)
+            occs_dict['name'] = key
+            inertial_dict[key] = occs_dict
+        
+        # print("Exporting link {}".format(occs_dict['name']))
 
     return inertial_dict, msg

@@ -75,7 +75,7 @@ def run(context):
         Write.write_urdf(joints_dict, links_xyz_dict, inertial_dict, package_name, save_dir, robot_name)
         Write.write_hello_pybullet(robot_name, save_dir)
         
-        # Generate STl files        
+        # Generate STl files
         utils.copy_occs(root)
         utils.export_stl(design, save_dir, components)   
         
