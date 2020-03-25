@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sun May 12 19:15:34 2019
+""" 
+Copy to new components and export stls.
 
-@author: syuntoku
+@syuntoku
+@yanshil
 """
 
 import adsk, adsk.core, adsk.fusion
@@ -29,7 +30,7 @@ def copy_occs(root):
     """    
     duplicate all the components
     """    
-    def copy_body(allOccs, occs):
+    def copy_body(rootOccs, occs):
         """    
         copy the old occs to new component
         """
@@ -40,28 +41,25 @@ def copy_occs(root):
         # Create new components from occs
         # This support even when a component has some occses. 
 
-        new_occs = allOccs.addNewComponent(transform)  # this create new occs
+        new_occs = rootOccs.addNewComponent(transform)  # this create new occs
         if occs.component.name == 'base_link':
             occs.component.name = 'old_component'
             new_occs.component.name = 'base_link'
         else:
             key = get_valid_filename(occs.fullPathName)
             new_occs.component.name = key
-            # new_occs.component.name = re.sub('[ :()]', '_', occs.name)
-        new_occs = allOccs[-1]
+        new_occs = rootOccs[-1]
         for i in range(bodies.count):
             body = bodies.item(i)
             body.copyToComponent(new_occs)
     
-    allOccs = root.occurrences
-    # allOccs = root.allOccurrences
+    rootOccs = root.occurrences
     
     oldOccs = []
-    # coppy_list = [occs for occs in allOccs]
     coppy_list = [occs for occs in root.allOccurrences]
     for occs in coppy_list:
         if occs.bRepBodies.count > 0:
-            copy_body(allOccs, occs)
+            copy_body(rootOccs, occs)
             oldOccs.append(occs)
 
     for occs in oldOccs:
@@ -100,7 +98,6 @@ def export_stl(design, save_dir, components):
                     key = get_valid_filename(occ.fullPathName)
                     key = key[:-1] ## Will generate an extra "1" in the end, remove it
                     print("Export file: {}".format(key))
-                    # fileName = scriptDir + "/" + occ.component.name
                     fileName = scriptDir + "/" + key
                     # create stl exportOptions
                     stlExportOptions = exportMgr.createSTLExportOptions(occ, fileName)
